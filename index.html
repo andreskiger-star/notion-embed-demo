@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boolean Search Validator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #fafbfc;
+            min-height: 100vh;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            border: 1px solid #e8ecef;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #755cff 0%, #5a4bdb 100%);
+            padding: 40px 40px 60px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 32px;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: #fafbfc;
+            color: #2c3e50;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #755cff;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(117, 92, 255, 0.1);
+        }
+
+        .search-input.valid {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .search-input.invalid {
+            border-color: #ef4444;
+            background: #fef2f2;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
+
+        .validate-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: #755cff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+        }
+
+        .validate-btn:hover {
+            background: #5a4bdb;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(117, 92, 255, 0.3);
+        }
+
+        .validate-btn:active {
+            transform: translateY(0);
+        }
+
+        .feedback {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-8px);
+            white-space: pre-line;
+        }
+
+        .feedback.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .feedback.valid {
+            background: #f0fdf4;
+            color: #059669;
+            border: 1px solid #d1fae5;
+        }
+
+        .feedback.invalid {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        .info-card {
+            background: #fafbfc;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e8ecef;
+        }
+
+        .info-card h3 {
+            color: #755cff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-card h3::before {
+            content: '●';
+            color: #755cff;
+        }
+
+        .rules-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .rules-list li {
+            margin-bottom: 12px;
+            padding-left: 24px;
+            position: relative;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        .rules-list li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .example-item {
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 14px;
+            border-left: 4px solid transparent;
+        }
+
+        .example-valid {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+            color: #059669;
+        }
+
+        .example-valid::before {
+            content: "✓ ";
+            font-weight: bold;
+        }
+
+        .example-invalid {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+            color: #dc2626;
+        }
+
+        .example-invalid::before {
+            content: "✗ ";
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.2s ease;
+        }
+
+        .search-input.valid + .status-indicator {
+            opacity: 1;
+            background: #10b981;
+        }
+
+        .search-input.invalid + .status-indicator {
+            opacity: 1;
+            background: #ef4444;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .powered-by {
+            text-align: center;
+            padding: 20px;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            border-top: 1px solid #f3f4f6;
+            background: #fafbfc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Boolean Search Validator</h1>
+            <p class="subtitle">Validate your search queries with precision and confidence</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <label for="searchInput" class="input-label">Enter your boolean search query:</label>
+                <div class="input-wrapper">
+                    <input type="text" id="searchInput" class="search-input" placeholder='Example: "machine learning" AND (python OR java) NOT "deep learning"'>
+                    <div class="status-indicator"></div>
+                </div>
+            </div>
+            
+            <button class="validate-btn" onclick="validateSearch()">Validate Search Query</button>
+            
+            <div id="feedback" class="feedback"></div>
+            
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Validation Rules</h3>
+                    <ul class="rules-list">
+                        <li>Boolean operators (AND, OR, NOT) must have spaces around them</li>
+                        <li>Quotation marks must be properly balanced</li>
+                        <li>Parentheses must be properly balanced</li>
+                        <li>No consecutive operators without terms between them</li>
+                        <li>Query cannot start or end with operators</li>
+                        <li>No empty parentheses allowed</li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <h3>Examples</h3>
+                    <div class="example-item example-valid">"machine learning" AND python</div>
+                    <div class="example-item example-valid">(cats OR dogs) AND NOT "wild animals"</div>
+                    <div class="example-item example-valid">javascript AND (react OR vue) NOT angular</div>
+                    <div class="example-item example-invalid">"machine learning"AND python</div>
+                    <div class="example-item example-invalid">"unclosed quote AND python</div>
+                    <div class="example-item example-invalid">AND python OR javascript</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="powered-by">
+            Powered by advanced boolean logic validation
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const feedback = document.getElementById('feedback');
+
+        // Real-time validation as user types
+        searchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query) {
+                validateSearchQuery(query, false);
+            } else {
+                resetValidation();
+            }
+        });
+
+        function validateSearch() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showFeedback('Please enter a search query to validate.', false);
+                return;
+            }
+            validateSearchQuery(query, true);
+        }
+
+        function validateSearchQuery(query, showSuccess) {
+            const errors = [];
+            
+            // Check for balanced quotes
+            const quoteCount = (query.match(/"/g) || []).length;
+            if (quoteCount % 2 !== 0) {
+                errors.push('Unbalanced quotation marks - each opening quote must have a closing quote');
+            }
+            
+            // Check for balanced parentheses
+            let parenCount = 0;
+            for (let char of query) {
+                if (char === '(') parenCount++;
+                if (char === ')') parenCount--;
+                if (parenCount < 0) {
+                    errors.push('Unbalanced parentheses - closing parenthesis without opening');
+                    break;
+                }
+            }
+            if (parenCount > 0) {
+                errors.push('Unbalanced parentheses - opening parenthesis without closing');
+            }
+            
+            // Check for proper spacing around boolean operators
+            const operatorRegex = /\b(AND|OR|NOT)\b/gi;
+            const matches = [...query.matchAll(operatorRegex)];
+            
+            for (let match of matches) {
+                const operator = match[0];
+                const index = match.index;
+                const beforeChar = index > 0 ? query[index - 1] : ' ';
+                const afterChar = index + operator.length < query.length ? query[index + operator.length] : ' ';
+                
+                if (beforeChar !== ' ' && beforeChar !== '(' && beforeChar !== ')') {
+                    errors.push(`Missing space before "${operator}" operator`);
+                }
+                if (afterChar !== ' ' && afterChar !== '(' && afterChar !== ')') {
+                    errors.push(`Missing space after "${operator}" operator`);
+                }
+            }
+            
+            // Check for consecutive operators
+            if (/\b(AND|OR|NOT)\s+(AND|OR|NOT)\b/gi.test(query)) {
+                errors.push('Consecutive boolean operators found - there must be search terms between operators');
+            }
+            
+            // Check if query starts or ends with operators
+            if (/^\s*(AND|OR|NOT)\b/gi.test(query)) {
+                errors.push('Query cannot start with a boolean operator');
+            }
+            if (/\b(AND|OR|NOT)\s*$/gi.test(query)) {
+                errors.push('Query cannot end with a boolean operator');
+            }
+            
+            // Check for empty parentheses
+            if (/\(\s*\)/.test(query)) {
+                errors.push('Empty parentheses are not allowed');
+            }
+            
+            // Check for operators immediately after opening parentheses or before closing
+            if (/\(\s*(AND|OR|NOT)\b/gi.test(query)) {
+                errors.push('Boolean operator cannot immediately follow opening parenthesis');
+            }
+            if (/\b(AND|OR|NOT)\s*\)/gi.test(query)) {
+                errors.push('Boolean operator cannot immediately precede closing parenthesis');
+            }
+            
+            // Display results
+            if (errors.length > 0) {
+                searchInput.classList.remove('valid');
+                searchInput.classList.add('invalid');
+                showFeedback('❌ Invalid search query:\n\n• ' + errors.join('\n• '), false);
+            } else {
+                searchInput.classList.remove('invalid');
+                searchInput.classList.add('valid');
+                if (showSuccess) {
+                    showFeedback('✅ Perfect! Your boolean search query is valid and ready to use.', true);
+                }
+            }
+        }
+
+        function showFeedback(message, isValid) {
+            feedback.textContent = message;
+            feedback.className = `feedback ${isValid ? 'valid' : 'invalid'} show`;
+        }
+
+        function resetValidation() {
+            searchInput.classList.remove('valid', 'invalid');
+            feedback.classList.remove('show');
+        }
+    </script>
+</body>
+</html>
